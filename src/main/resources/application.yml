@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: microservice1
+  datasource:
+    url: jdbc:h2:mem:pruebaDB;
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+server:
+  port: 8091
