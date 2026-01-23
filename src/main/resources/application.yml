@@ -1,10 +1,82 @@
 spring:
   application:
     name: microservice1
+
+  # Configuración de Base de Datos
   datasource:
-    url: jdbc:h2:mem:pruebaDB;
+    url: jdbc:h2:mem:pruebaDB;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driverClassName: org.h2.Driver
     username: sa
     password: password
+
+  # JPA / Hibernate
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  # H2 Console (solo desarrollo)
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  # Kafka Configuration
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:29092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      retries: 3
+      properties:
+        max.block.ms: 5000
+        request.timeout.ms: 5000
+        delivery.timeout.ms: 10000
+        reconnect.backoff.ms: 5000
+        reconnect.backoff.max.ms: 30000
+
+# Server Configuration
 server:
   port: 8091
+
+# Kafka Topics
+kafka:
+  topic:
+    cliente-events: cliente-events
+
+# Actuator - Health checks y métricas
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+# Logging
+logging:
+  level:
+    com.prueba.microservice1: INFO
+    org.springframework.kafka: WARN
+    org.apache.kafka: ERROR
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+---
+# Perfil Docker
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  kafka:
+    bootstrap-servers: kafka:9092
+
+logging:
+  level:
+    com.prueba.microservice1: INFO

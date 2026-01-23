@@ -1,75 +1,48 @@
 package com.prueba.microservice1.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
+/**
+ * Entidad base Persona.
+ */
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@SuperBuilder
 public class Persona {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotBlank(message = "El nombre es obligatorio")
+    @Size(min = 2, max = 100, message = "El nombre debe tener entre 2 y 100 caracteres")
     private String nombre;
+
+    @Size(max = 10, message = "El género no puede exceder 10 caracteres")
     private String genero;
+
+    @Min(value = 0, message = "La edad debe ser un número positivo")
     private int edad;
+
+    @NotBlank(message = "La identificación es obligatoria")
+    @Column(unique = true)
     private String identificacion;
+
+    @Size(max = 200, message = "La dirección no puede exceder 200 caracteres")
     private String direccion;
+
+    @Size(max = 20, message = "El teléfono no puede exceder 20 caracteres")
     private String telefono;
-
-    // Getters
-    public Long getId() {
-        return id;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public String getGenero() {
-        return genero;
-    }
-
-    public int getEdad() {
-        return edad;
-    }
-
-    public String getIdentificacion() {
-        return identificacion;
-    }
-
-    public String getDireccion() {
-        return direccion;
-    }
-
-    public String getTelefono() {
-        return telefono;
-    }
-
-    // Setters
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public void setGenero(String genero) {
-        this.genero = genero;
-    }
-
-    public void setEdad(int edad) {
-        this.edad = edad;
-    }
-
-    public void setIdentificacion(String identificacion) {
-        this.identificacion = identificacion;
-    }
-
-    public void setDireccion(String direccion) {
-        this.direccion = direccion;
-    }
-
-    public void setTelefono(String telefono) {
-        this.telefono = telefono;
-    }
 }

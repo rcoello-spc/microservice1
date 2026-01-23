@@ -1,57 +1,116 @@
 package com.prueba.microservice1.controller;
 
+import com.prueba.microservice1.dto.ClienteDTO;
+import com.prueba.microservice1.dto.ClienteResponseDTO;
 import com.prueba.microservice1.entity.Cliente;
-import com.prueba.microservice1.exception.ClienteNotFoundException;
-import com.prueba.microservice1.repository.ClienteRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.prueba.microservice1.service.ClienteService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Controller REST para gestión de Clientes.
+ */
 @RestController
 @RequestMapping("/clientes")
+@RequiredArgsConstructor
+@Slf4j
 public class ClienteController {
 
-    @Autowired
-    private ClienteRepository clienteRepository;
+    private final ClienteService clienteService;
 
-    @PostMapping
-    public Cliente createCliente(@RequestBody Cliente cliente) {
-        return clienteRepository.save(cliente);
-    }
-
+    /**
+     * Obtiene todos los clientes.
+     * GET /clientes
+     */
     @GetMapping
-    public List<Cliente> getAllClientes() {
-        return clienteRepository.findAll();
+    public ResponseEntity<List<ClienteResponseDTO>> getAllClientes() {
+        log.info("GET /clientes - Obteniendo todos los clientes");
+        List<ClienteResponseDTO> clientes = clienteService.getAllClientes();
+        return ResponseEntity.ok(clientes);
     }
 
+    /**
+     * Obtiene solo clientes activos.
+     * GET /clientes/activos
+     */
+    @GetMapping("/activos")
+    public ResponseEntity<List<ClienteResponseDTO>> getClientesActivos() {
+        log.info("GET /clientes/activos - Obteniendo clientes activos");
+        List<ClienteResponseDTO> clientes = clienteService.getClientesActivos();
+        return ResponseEntity.ok(clientes);
+    }
+
+    /**
+     * Obtiene cliente por ID.
+     * GET /clientes/{id}
+     */
     @GetMapping("/{id}")
-    public Cliente getClienteById(@PathVariable Long id) {
-        return clienteRepository.findById(id)
-                .orElseThrow(() -> new ClienteNotFoundException("Cliente no encontrado con id: " + id));
+    public ResponseEntity<ClienteResponseDTO> getClienteById(@PathVariable Long id) {
+        log.info("GET /clientes/{} - Obteniendo cliente por ID", id);
+        ClienteResponseDTO cliente = clienteService.getClienteById(id);
+        return ResponseEntity.ok(cliente);
     }
 
+    /**
+     * Endpoint interno para obtener entidad completa (usado por microservice2).
+     * GET /clientes/{id}/entity
+     */
+    @GetMapping("/{id}/entity")
+    public ResponseEntity<Cliente> getClienteEntityById(@PathVariable Long id) {
+        log.info("GET /clientes/{}/entity - Obteniendo entidad cliente por ID", id);
+        Cliente cliente = clienteService.getClienteEntityById(id);
+        return ResponseEntity.ok(cliente);
+    }
+
+    /**
+     * Crea un nuevo cliente.
+     * POST /clientes
+     */
+    @PostMapping
+    public ResponseEntity<ClienteResponseDTO> createCliente(@Valid @RequestBody ClienteDTO clienteDTO) {
+        log.info("POST /clientes - Creando nuevo cliente: {}", clienteDTO.nombre());
+        ClienteResponseDTO created = clienteService.createCliente(clienteDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    /**
+     * Actualiza un cliente existente.
+     * PUT /clientes/{id}
+     */
     @PutMapping("/{id}")
-    public Cliente updateCliente(@PathVariable Long id, @RequestBody Cliente clienteDetails) {
-        Cliente cliente = clienteRepository.findById(id)
-                .orElseThrow(() -> new ClienteNotFoundException("Cliente no encontrado con id: " + id));
-
-        cliente.setNombre(clienteDetails.getNombre());
-        cliente.setGenero(clienteDetails.getGenero());
-        cliente.setEdad(clienteDetails.getEdad());
-        cliente.setDireccion(clienteDetails.getDireccion());
-        cliente.setTelefono(clienteDetails.getTelefono());
-        cliente.setContraseña(clienteDetails.getContraseña());
-        cliente.setEstado(clienteDetails.getEstado());
-
-        return clienteRepository.save(cliente);
+    public ResponseEntity<ClienteResponseDTO> updateCliente(
+            @PathVariable Long id,
+            @Valid @RequestBody ClienteDTO clienteDTO) {
+        log.info("PUT /clientes/{} - Actualizando cliente", id);
+        ClienteResponseDTO updated = clienteService.updateCliente(id, clienteDTO);
+        return ResponseEntity.ok(updated);
     }
 
+    /**
+     * Elimina un cliente.
+     * DELETE /clientes/{id}
+     */
     @DeleteMapping("/{id}")
-    public void deleteCliente(@PathVariable Long id) {
-        if (!clienteRepository.existsById(id)) {
-            throw new ClienteNotFoundException("Cliente no encontrado con id: " + id);
-        }
-        clienteRepository.deleteById(id);
+    public ResponseEntity<Void> deleteCliente(@PathVariable Long id) {
+        log.info("DELETE /clientes/{} - Eliminando cliente", id);
+        clienteService.deleteCliente(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Cuenta clientes activos.
+     * GET /clientes/count/activos
+     */
+    @GetMapping("/count/activos")
+    public ResponseEntity<Long> countClientesActivos() {
+        log.info("GET /clientes/count/activos - Contando clientes activos");
+        long count = clienteService.countClientesActivos();
+        return ResponseEntity.ok(count);
     }
 }

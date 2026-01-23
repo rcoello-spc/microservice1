@@ -1,28 +1,34 @@
 package com.prueba.microservice1.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
+/**
+ * Entidad Cliente que extiende de Persona.
+ */
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@SuperBuilder
 public class Cliente extends Persona {
 
-    private String contraseña;
+    @NotBlank(message = "La contraseña es obligatoria")
+    private String contrasena;
+
     private String estado;
 
-    // Getters
-    public String getContraseña() {
-        return contraseña;
-    }
-
-    public String getEstado() {
-        return estado;
-    }
-
-    // Setters
-    public void setContraseña(String contraseña) {
-        this.contraseña = contraseña;
-    }
-
-    public void setEstado(String estado) {
-        this.estado = estado;
+    /**
+     * Verifica si el cliente está activo.
+     * Null-safe check del estado.
+     */
+    public boolean isActivo() {
+        return estado != null && estado.equalsIgnoreCase("True");
     }
 }
